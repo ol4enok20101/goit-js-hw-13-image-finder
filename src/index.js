@@ -2,39 +2,23 @@ import './styles.css';
 import throttle from 'lodash.throttle';
 import refs from './js/refs';
 import updateImageMarkup from './js/update-image-markup';
-import apiService from './js/apiService';
+import fetchImages from './js/fetch-images';
+import scroll from './js/scroll.js';
 
-refs.searchButton.addEventListener('click', event => {
+refs.searchForm.addEventListener('submit', handleFormSubmit);
 
+function handleFormSubmit(event) {
   event.preventDefault();
 
-  apiService.query = refs.searchForm.value;
+  refs.gallery.innerHTML = '';
 
-  //  searchForm.value = "";
+  const form = event.currentTarget;
+  const inputValue = form.elements.query.value;
 
-  apiService.resetPage();
-  apiService.fetchImages().then(hits => {
-    updateImageMarkup(hits);
-    apiService.incrementPage();
-  });
-});
+  handleFormSubmit(console.log('hi'));
 
-// бесконечный скролл с тротлом
-window.addEventListener('scroll', throttle(endlessScroll, 1000));
-function endlessScroll() {
-  const block = document.querySelector('.gallery');
-  let counter = 1;
-  let contentHeight = block.offsetHeight; // 1) высота блока контента вместе с границами
-  let yOffset = window.pageYOffset; // 2) текущее положение скролбара
-  let window_height = window.innerHeight; // 3) высота внутренней области окна документа
-  let y = yOffset + window_height;
-  // если пользователь достиг конца
-  if (y >= contentHeight) {
-    // загружаем новое содержимое в элемент
-    apiService.fetchImages().then(hits => {
-      updateImageMarkup(hits);
-      apiService.incrementPage();
-    });
-    apiService.incrementPage();
-  }
+  fetchImages(inputValue).then(updateImageMarkup);
+  fetchImages.incrementPage();
+
+  form.resetPage();
 }
